@@ -177,6 +177,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.1"
+  equatable:
+    dependency: "direct main"
+    description:
+      name: equatable
+      sha256: "567c64b3cb4cf82397aac55f4f0cbd3ca20d77c6c03bedbc4ceaddc08904aef7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.7"
   fake_async:
     dependency: transitive
     description:
@@ -219,22 +227,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  freezed:
-    dependency: "direct dev"
-    description:
-      name: freezed
-      sha256: da32f8ba8cfcd4ec71d9decc8cbf28bd2c31b5283d9887eb51eb4a0659d8110c
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.2.0"
-  freezed_annotation:
-    dependency: "direct main"
-    description:
-      name: freezed_annotation
-      sha256: "7294967ff0a6d98638e7acb774aac3af2550777accd8149c90af5b014e6d44d8"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.0"
   frontend_server_client:
     dependency: transitive
     description:
@@ -291,14 +283,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.9.0"
-  json_serializable:
-    dependency: "direct dev"
-    description:
-      name: json_serializable
-      sha256: ce2cf974ccdee13be2a510832d7fba0b94b364e0b0395dee42abaa51b855be27
-      url: "https://pub.dev"
-    source: hosted
-    version: "6.10.0"
   leak_tracker:
     dependency: transitive
     description:
@@ -440,22 +424,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  source_gen:
-    dependency: transitive
-    description:
-      name: source_gen
-      sha256: fc787b1f89ceac9580c3616f899c9a447413cbdac1df071302127764c023a134
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.0"
-  source_helper:
-    dependency: transitive
-    description:
-      name: source_helper
-      sha256: "4f81479fe5194a622cdd1713fe1ecb683a6e6c85cd8cec8e2e35ee5ab3fdf2a1"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.3.6"
   source_span:
     dependency: transitive
     description:
