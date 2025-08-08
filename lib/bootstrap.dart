@@ -58,6 +58,7 @@ void _initializeLoggingAndErrorHandling() {
     _log.info('Debug mode detected. Initializing debug tools...');
     debugPaintSizeEnabled = true;
     debugRepaintRainbowEnabled = true;
+    debugPrintRebuildDirtyWidgets = true;
     Bloc.observer = const _DebugBlocObserver();
     WidgetsBinding.instance.addTimingsCallback((timings) {
       for (final timing in timings) {
