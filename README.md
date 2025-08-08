@@ -4,8 +4,6 @@
 ## 🎯 About The Project
 A simple Twitter clone built with Flutter. My personal project for learning the basics of the Flutter framework.
 
-## ✨ Features
-
 ## 🛡️ Supported Platforms
 
 | Platform | Status | Min. Version | Notes |
@@ -16,10 +14,6 @@ A simple Twitter clone built with Flutter. My personal project for learning the 
 | Windows | ❌ Supported | `N/A` |  - |
 | Linux | ❌ Supported | `N/A` |  - |
 | Web | ❌ In Progress | `N/A` | - |
-
-## 📸 Screenshots
-
-## 🚀 Getting Started
 
 ## 🛠️ Technologies
 The project is built using the following key packages and technologies, each chosen for a specific purpose to ensure a clean, testable, and maintainable codebase.
