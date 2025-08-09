@@ -5,5 +5,5 @@
 // export 'domain/repositories/repositories.dart';
 // export 'domain/usecases/usecases.dart';
 // export 'presentation/blocs/blocs.dart';
-// export 'presentation/pages/pages.dart';
+// export 'presentation/screens/screens.dart';
 // export 'presentation/widgets/widgets.dart';

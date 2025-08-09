@@ -35,19 +35,16 @@ void main() {
     test(
       'should call authenticationRepository.register and return token successfully',
       () async {
-        // ARRANGE
         when(
           () => mockRepository.register(user: tUserEntity),
         ).thenAnswer((_) async => tToken);
 
-        // ACT
         final result = await useCase(
           email: tEmail,
           username: tUsername,
           password: tPassword,
         );
 
-        // ASSERT
         expect(result, tToken);
         verify(() => mockRepository.register(user: tUserEntity)).called(1);
         verifyNoMoreInteractions(mockRepository);
@@ -62,10 +59,8 @@ void main() {
           () => mockRepository.register(user: any(named: 'user')),
         ).thenThrow(tException);
 
-        // ACT
         final call = useCase.call;
 
-        // ASSERT
         expect(
           () => call(email: tEmail, username: tUsername, password: tPassword),
           throwsA(isA<Exception>()),

@@ -18,7 +18,7 @@ class ApplicationView extends StatelessWidget {
     return const MaterialApp(
       title: 'Twitter',
       debugShowCheckedModeBanner: false,
-      home: AuthenticationPage(),
+      home: LoginScreen(),
     );
   }
 }
