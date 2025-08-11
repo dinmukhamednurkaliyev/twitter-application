@@ -74,7 +74,7 @@ class _SignUpViewState extends State<SignUpView> {
               ..hideCurrentSnackBar()
               ..showSnackBar(
                 SnackBar(
-                  content: Text('Registration Failed: ${state.message}'),
+                  content: Text('Sign up Failed: ${state.message}'),
                 ),
               );
           }
@@ -82,7 +82,7 @@ class _SignUpViewState extends State<SignUpView> {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
-                const SnackBar(content: Text('Registration Successful!')),
+                const SnackBar(content: Text('Sign up Successful!')),
               );
           }
         },
