@@ -4,7 +4,6 @@ import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logging/logging.dart';
 
 final _log = Logger('ApplicationBootstrap');
@@ -57,7 +56,6 @@ void _initializeLoggingAndErrorHandling() {
     debugPaintSizeEnabled = true;
     debugRepaintRainbowEnabled = true;
     debugPrintRebuildDirtyWidgets = true;
-    Bloc.observer = const _DebugBlocObserver();
     WidgetsBinding.instance.addTimingsCallback((timings) {
       for (final timing in timings) {
         if (timing.totalSpan > const Duration(milliseconds: 17)) {
@@ -68,22 +66,5 @@ void _initializeLoggingAndErrorHandling() {
       }
     });
     _log.info('Frame performance monitor enabled.');
-  }
-}
-
-class _DebugBlocObserver extends BlocObserver {
-  const _DebugBlocObserver();
-  static final _log = Logger('BlocObserver');
-
-  @override
-  void onChange(BlocBase<dynamic> bloc, Change<dynamic> change) {
-    super.onChange(bloc, change);
-    _log.info('onChange(${bloc.runtimeType}): ${change.nextState.runtimeType}');
-  }
-
-  @override
-  void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
-    super.onError(bloc, error, stackTrace);
-    _log.severe('onError(${bloc.runtimeType})', error, stackTrace);
   }
 }

@@ -1,84 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:twitter_application/features/authentication/authentication.dart';
 
-class SignUpScreen extends StatelessWidget {
+final AutoDisposeProvider<TextEditingController> _emailControllerProvider =
+    Provider.autoDispose((ref) => TextEditingController());
+final AutoDisposeProvider<TextEditingController> _usernameControllerProvider =
+    Provider.autoDispose((ref) => TextEditingController());
+final AutoDisposeProvider<TextEditingController> _passwordControllerProvider =
+    Provider.autoDispose((ref) => TextEditingController());
+
+class SignUpScreen extends ConsumerWidget {
   const SignUpScreen({super.key});
+  static final _formKey = GlobalKey<FormState>();
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => SignUpBloc(
-        signUpUseCase: SignUpUseCase(
-          authenticationRepository: context.read<AuthenticationRepository>(),
-        ),
-      ),
-      child: const SignUpView(),
-    );
-  }
-}
-
-class SignUpView extends StatefulWidget {
-  const SignUpView({super.key});
-
-  @override
-  State<SignUpView> createState() => _SignUpViewState();
-}
-
-class _SignUpViewState extends State<SignUpView> {
-  final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _emailController;
-  late final TextEditingController _usernameController;
-  late final TextEditingController _passwordController;
-
-  @override
-  void initState() {
-    super.initState();
-    _emailController = TextEditingController();
-    _usernameController = TextEditingController();
-    _passwordController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _usernameController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  void _onRegisterSubmitted() {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    context.read<SignUpBloc>().add(
-      SignUpSubmitted(
-        email: _emailController.text.trim(),
-        username: _usernameController.text.trim(),
-        password: _passwordController.text.trim(),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Register'),
-      ),
-      body: BlocListener<SignUpBloc, SignUp>(
-        listener: (context, state) {
-          if (state is SignInFailure) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                SnackBar(
-                  content: Text('Sign up Failed: ${state.message}'),
-                ),
-              );
-          }
-          if (state is SignInSuccess) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<AsyncValue<String?>>(signUpControllerProvider, (previous, next) {
+      next.whenOrNull(
+        error: (error, _) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(content: Text('Sign up Failed: $error')),
+            );
+        },
+        data: (token) {
+          if (token != null) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
@@ -86,21 +33,42 @@ class _SignUpViewState extends State<SignUpView> {
               );
           }
         },
-        child: Form(
-          key: _formKey,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: ListView(
-              children: [
-                _EmailInputField(),
-                const SizedBox(height: 16),
-                _UsernameInputField(),
-                const SizedBox(height: 16),
-                _PasswordInputField(),
-                const SizedBox(height: 32),
-                _RegisterButton(onPressed: _onRegisterSubmitted),
-              ],
-            ),
+      );
+    });
+
+    final emailController = ref.read(_emailControllerProvider);
+    final usernameController = ref.read(_usernameControllerProvider);
+    final passwordController = ref.read(_passwordControllerProvider);
+
+    void onRegisterSubmitted() {
+      if (!_formKey.currentState!.validate()) {
+        return;
+      }
+      ref
+          .read(signUpControllerProvider.notifier)
+          .signUp(
+            email: emailController.text.trim(),
+            username: usernameController.text.trim(),
+            password: passwordController.text.trim(),
+          );
+    }
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Sign Up')),
+      body: Form(
+        key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: ListView(
+            children: [
+              _EmailInputField(),
+              const SizedBox(height: 16),
+              _UsernameInputField(),
+              const SizedBox(height: 16),
+              _PasswordInputField(),
+              const SizedBox(height: 32),
+              _SignUpButton(onPressed: onRegisterSubmitted),
+            ],
           ),
         ),
       ),
@@ -108,15 +76,16 @@ class _SignUpViewState extends State<SignUpView> {
   }
 }
 
-class _EmailInputField extends StatelessWidget {
+class _EmailInputField extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
-    final state = context.watch<SignUpBloc>().state;
-    final viewState = context.read<_SignUpViewState>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final signUpState = ref.watch(signUpControllerProvider);
+    final isLoading = signUpState.isLoading;
+    final emailController = ref.watch(_emailControllerProvider);
 
     return TextFormField(
-      controller: viewState._emailController,
-      enabled: state is! SignUpLoading,
+      controller: emailController,
+      enabled: !isLoading,
       decoration: const InputDecoration(
         labelText: 'Email',
         border: OutlineInputBorder(),
@@ -124,9 +93,7 @@ class _EmailInputField extends StatelessWidget {
       keyboardType: TextInputType.emailAddress,
       autocorrect: false,
       validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Email is required';
-        }
+        if (value == null || value.trim().isEmpty) return 'Email is required';
         if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
           return 'Please enter a valid email';
         }
@@ -136,15 +103,16 @@ class _EmailInputField extends StatelessWidget {
   }
 }
 
-class _UsernameInputField extends StatelessWidget {
+class _UsernameInputField extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
-    final state = context.watch<SignUpBloc>().state;
-    final viewState = context.read<_SignUpViewState>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final signUpState = ref.watch(signUpControllerProvider);
+    final isLoading = signUpState.isLoading;
+    final usernameController = ref.watch(_usernameControllerProvider);
 
     return TextFormField(
-      controller: viewState._usernameController,
-      enabled: state is! SignUpLoading,
+      controller: usernameController,
+      enabled: !isLoading,
       decoration: const InputDecoration(
         labelText: 'Username',
         border: OutlineInputBorder(),
@@ -159,24 +127,23 @@ class _UsernameInputField extends StatelessWidget {
   }
 }
 
-class _PasswordInputField extends StatelessWidget {
+class _PasswordInputField extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
-    final state = context.watch<SignUpBloc>().state;
-    final viewState = context.read<_SignUpViewState>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final signUpState = ref.watch(signUpControllerProvider);
+    final isLoading = signUpState.isLoading;
+    final passwordController = ref.watch(_passwordControllerProvider);
 
     return TextFormField(
-      controller: viewState._passwordController,
-      enabled: state is! SignUpLoading,
+      controller: passwordController,
+      enabled: !isLoading,
       decoration: const InputDecoration(
         labelText: 'Password',
         border: OutlineInputBorder(),
       ),
       obscureText: true,
       validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Password is required';
-        }
+        if (value == null || value.isEmpty) return 'Password is required';
         if (value.length < 8) {
           return 'Password must be at least 8 characters long';
         }
@@ -186,28 +153,24 @@ class _PasswordInputField extends StatelessWidget {
   }
 }
 
-class _RegisterButton extends StatelessWidget {
-  const _RegisterButton({required this.onPressed});
+class _SignUpButton extends ConsumerWidget {
+  const _SignUpButton({required this.onPressed});
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<SignUpBloc, SignUp>(
-      builder: (context, state) {
-        final isLoading = state is SignUpLoading;
-        return ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size.fromHeight(50),
-          ),
-          onPressed: isLoading ? null : onPressed,
-          child: isLoading
-              ? const SizedBox.square(
-                  dimension: 24,
-                  child: CircularProgressIndicator(color: Colors.white),
-                )
-              : const Text('Register'),
-        );
-      },
+  Widget build(BuildContext context, WidgetRef ref) {
+    final signUpState = ref.watch(signUpControllerProvider);
+    final isLoading = signUpState.isLoading;
+
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
+      onPressed: isLoading ? null : onPressed,
+      child: isLoading
+          ? const SizedBox.square(
+              dimension: 24,
+              child: CircularProgressIndicator(color: Colors.white),
+            )
+          : const Text('Sign Up'),
     );
   }
 }

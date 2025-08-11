@@ -1,3 +1,4 @@
-export 'blocs/blocs.dart';
+export 'controllers/controllers.dart';
+export 'providers/providers.dart';
 export 'screens/screens.dart';
 export 'widgets/widgets.dart';
