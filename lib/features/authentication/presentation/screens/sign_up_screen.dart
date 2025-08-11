@@ -9,7 +9,7 @@ class SignUpScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => SignUpBloc(
-        registerUseCase: SignUpUseCase(
+        signUpUseCase: SignUpUseCase(
           authenticationRepository: context.read<AuthenticationRepository>(),
         ),
       ),

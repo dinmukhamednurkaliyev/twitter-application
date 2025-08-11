@@ -1,9 +1,3 @@
-export 'data/models/models.dart';
-export 'data/repositories/repositories.dart';
-export 'data/sources/sources.dart';
-export 'domain/entities/entities.dart';
-export 'domain/repositories/repositories.dart';
-export 'domain/usecases/usecases.dart';
-export 'presentation/blocs/blocs.dart';
-export 'presentation/screens/screens.dart';
-export 'presentation/widgets/widgets.dart';
+export 'data/data.dart';
+export 'domain/domain.dart';
+export 'presentation/presentation.dart';

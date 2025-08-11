@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:twitter_application/core/core.dart';
 import 'package:twitter_application/features/authentication/authentication.dart';
 
 part 'sign_up_event.dart';
@@ -7,8 +8,8 @@ part 'sign_up_state.dart';
 
 class SignUpBloc extends Bloc<SignUpEvent, SignUp> {
   SignUpBloc({
-    required SignUpUseCase registerUseCase,
-  }) : _registerUseCase = registerUseCase,
+    required SignUpUseCase signUpUseCase,
+  }) : _registerUseCase = signUpUseCase,
        super(const SignUpInitial()) {
     on<SignUpSubmitted>(_onRegisterSubmitted);
   }
@@ -27,7 +28,7 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUp> {
       );
       emit(const SignInSuccess());
     } on Exception catch (exception) {
-      emit(SignInFailure(message: exception.toString()));
+      emit(SignInFailure(message: exception.toFormattedString()));
     }
   }
 }

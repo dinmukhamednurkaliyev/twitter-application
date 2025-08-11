@@ -7,4 +7,10 @@ interface class AuthenticationRepository {
   }) {
     throw UnimplementedError('register() has not been implemented yet.');
   }
+
+  Future<String> signIn({
+    required UserEntity user,
+  }) {
+    throw UnimplementedError('register() has not been implemented yet.');
+  }
 }

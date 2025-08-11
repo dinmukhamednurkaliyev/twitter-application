@@ -20,7 +20,7 @@ void main() {
     );
     setUp(() {
       mockRegisterUseCase = MockSignUpUseCase();
-      registerBloc = SignUpBloc(registerUseCase: mockRegisterUseCase);
+      registerBloc = SignUpBloc(signUpUseCase: mockRegisterUseCase);
     });
 
     tearDown(() {
