@@ -1,1 +1,1 @@
-export 'sign_up_controller.dart';
+export 'authentication_controller.dart';

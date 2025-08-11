@@ -3,7 +3,6 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:logging/logging.dart';
 
 final _log = Logger('ApplicationBootstrap');
@@ -53,9 +52,15 @@ void _initializeLoggingAndErrorHandling() {
 
   if (kDebugMode) {
     _log.info('Debug mode detected. Initializing debug tools...');
-    debugPaintSizeEnabled = true;
-    debugRepaintRainbowEnabled = true;
-    debugPrintRebuildDirtyWidgets = true;
+    // debugPaintSizeEnabled = true;
+    // debugPaintBaselinesEnabled = true;
+    // debugPaintPointersEnabled = true;
+    // debugRepaintRainbowEnabled = true;
+    // debugPaintBaselinesEnabled = true;
+    // debugPaintPointersEnabled = true;
+    // debugPrintRebuildDirtyWidgets = true;
+    // debugPaintBaselinesEnabled = true;
+    // debugPaintPointersEnabled = true;
     WidgetsBinding.instance.addTimingsCallback((timings) {
       for (final timing in timings) {
         if (timing.totalSpan > const Duration(milliseconds: 17)) {

@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:twitter_application/features/authentication/authentication.dart';
@@ -10,65 +11,78 @@ final AutoDisposeProvider<TextEditingController> _passwordControllerProvider =
     Provider.autoDispose((ref) => TextEditingController());
 
 class SignUpScreen extends ConsumerWidget {
-  const SignUpScreen({super.key});
-  static final _formKey = GlobalKey<FormState>();
+  SignUpScreen({super.key});
+
+  final _formKey = GlobalKey<FormState>();
+
+  void _onRegisterSubmitted(WidgetRef ref) {
+    if (_formKey.currentState?.validate() != true) {
+      return;
+    }
+
+    final email = ref.read(_emailControllerProvider).text.trim();
+    final username = ref.read(_usernameControllerProvider).text.trim();
+    final password = ref.read(_passwordControllerProvider).text.trim();
+
+    ref
+        .read(authenticationControllerProvider.notifier)
+        .signUp(
+          email: email,
+          username: username,
+          password: password,
+        );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen<AsyncValue<String?>>(signUpControllerProvider, (previous, next) {
-      next.whenOrNull(
-        error: (error, _) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              SnackBar(content: Text('Sign up Failed: $error')),
-            );
-        },
-        data: (token) {
-          if (token != null) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(
-                const SnackBar(content: Text('Sign up Successful!')),
-              );
-          }
-        },
-      );
+    ref.listen<AsyncValue<UserEntity?>>(authenticationControllerProvider, (
+      previous,
+      next,
+    ) {
+      final messenger = ScaffoldMessenger.of(context);
+      if (next.hasError && !next.isLoading) {
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(content: Text('Sign up Failed: ${next.error}')),
+          );
+      }
+      if (next.hasValue && next.value != null) {
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(
+                'Welcome, ${next.value!.username}! Sign up successful.',
+              ),
+            ),
+          );
+      }
     });
 
-    final emailController = ref.read(_emailControllerProvider);
-    final usernameController = ref.read(_usernameControllerProvider);
-    final passwordController = ref.read(_passwordControllerProvider);
-
-    void onRegisterSubmitted() {
-      if (!_formKey.currentState!.validate()) {
-        return;
-      }
-      ref
-          .read(signUpControllerProvider.notifier)
-          .signUp(
-            email: emailController.text.trim(),
-            username: usernameController.text.trim(),
-            password: passwordController.text.trim(),
-          );
-    }
+    final formWidgets = <Widget>[
+      const _EmailInputField(),
+      const _UsernameInputField(),
+      const _PasswordInputField(),
+      const Padding(
+        padding: EdgeInsets.only(
+          top: 16,
+        ),
+        child: _SignInLink(),
+      ),
+      _SignUpButton(onPressed: () => _onRegisterSubmitted(ref)),
+    ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign Up')),
+      appBar: AppBar(title: const Text('Create Account')),
       body: Form(
         key: _formKey,
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: ListView(
-            children: [
-              _EmailInputField(),
-              const SizedBox(height: 16),
-              _UsernameInputField(),
-              const SizedBox(height: 16),
-              _PasswordInputField(),
-              const SizedBox(height: 32),
-              _SignUpButton(onPressed: onRegisterSubmitted),
-            ],
+          child: ListView.separated(
+            itemCount: formWidgets.length,
+            itemBuilder: (context, index) => formWidgets[index],
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
           ),
         ),
       ),
@@ -77,15 +91,16 @@ class SignUpScreen extends ConsumerWidget {
 }
 
 class _EmailInputField extends ConsumerWidget {
+  const _EmailInputField();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final signUpState = ref.watch(signUpControllerProvider);
-    final isLoading = signUpState.isLoading;
+    final authenticationState = ref.watch(authenticationControllerProvider);
     final emailController = ref.watch(_emailControllerProvider);
 
     return TextFormField(
       controller: emailController,
-      enabled: !isLoading,
+      enabled: !authenticationState.isLoading,
       decoration: const InputDecoration(
         labelText: 'Email',
         border: OutlineInputBorder(),
@@ -104,15 +119,16 @@ class _EmailInputField extends ConsumerWidget {
 }
 
 class _UsernameInputField extends ConsumerWidget {
+  const _UsernameInputField();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final signUpState = ref.watch(signUpControllerProvider);
-    final isLoading = signUpState.isLoading;
+    final authenticationState = ref.watch(authenticationControllerProvider);
     final usernameController = ref.watch(_usernameControllerProvider);
 
     return TextFormField(
       controller: usernameController,
-      enabled: !isLoading,
+      enabled: !authenticationState.isLoading,
       decoration: const InputDecoration(
         labelText: 'Username',
         border: OutlineInputBorder(),
@@ -128,15 +144,16 @@ class _UsernameInputField extends ConsumerWidget {
 }
 
 class _PasswordInputField extends ConsumerWidget {
+  const _PasswordInputField();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final signUpState = ref.watch(signUpControllerProvider);
-    final isLoading = signUpState.isLoading;
+    final authenticationState = ref.watch(authenticationControllerProvider);
     final passwordController = ref.watch(_passwordControllerProvider);
 
     return TextFormField(
       controller: passwordController,
-      enabled: !isLoading,
+      enabled: !authenticationState.isLoading,
       decoration: const InputDecoration(
         labelText: 'Password',
         border: OutlineInputBorder(),
@@ -153,22 +170,55 @@ class _PasswordInputField extends ConsumerWidget {
   }
 }
 
+class _SignInLink extends StatelessWidget {
+  const _SignInLink();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        style: theme.textTheme.bodyMedium,
+        children: [
+          const TextSpan(text: 'Already have an account? '),
+          TextSpan(
+            text: 'Sign In',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: theme.primaryColor,
+            ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () {
+                print('Navigate to Sign In screen');
+              },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SignUpButton extends ConsumerWidget {
   const _SignUpButton({required this.onPressed});
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final signUpState = ref.watch(signUpControllerProvider);
-    final isLoading = signUpState.isLoading;
+    final authState = ref.watch(authenticationControllerProvider);
 
     return ElevatedButton(
       style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-      onPressed: isLoading ? null : onPressed,
-      child: isLoading
-          ? const SizedBox.square(
-              dimension: 24,
-              child: CircularProgressIndicator(color: Colors.white),
+      onPressed: authState.isLoading ? null : onPressed,
+      child: authState.isLoading
+          ? const RepaintBoundary(
+              child: SizedBox.square(
+                dimension: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 3,
+                ),
+              ),
             )
           : const Text('Sign Up'),
     );
