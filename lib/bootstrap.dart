@@ -16,8 +16,6 @@ Future<void> bootstrap({required FutureOr<Widget> Function() builder}) async {
 
       _initializeLoggingAndErrorHandling();
 
-      _log.info('Dependencies (if any) would be initialized here.');
-
       runApp(await builder());
     },
     (error, stackTrace) {

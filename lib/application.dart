@@ -15,8 +15,9 @@ class ApplicationView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const title = 'Twitter';
     return const MaterialApp(
-      title: 'Twitter',
+      title: title,
       debugShowCheckedModeBanner: false,
       home: LoginScreen(),
     );
