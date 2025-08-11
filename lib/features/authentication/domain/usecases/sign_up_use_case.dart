@@ -1,7 +1,7 @@
 import 'package:twitter_application/features/authentication/authentication.dart';
 
-class RegisterUseCase {
-  const RegisterUseCase({required this.authenticationRepository});
+class SignUpUseCase {
+  const SignUpUseCase({required this.authenticationRepository});
   final AuthenticationRepository authenticationRepository;
 
   Future<String> call({
@@ -14,7 +14,7 @@ class RegisterUseCase {
       username: username,
       password: password,
     );
-    final token = await authenticationRepository.register(user: user);
+    final token = await authenticationRepository.signUp(user: user);
     return token;
   }
 }

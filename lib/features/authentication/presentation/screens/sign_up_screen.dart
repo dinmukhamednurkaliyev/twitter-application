@@ -2,30 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:twitter_application/features/authentication/authentication.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class SignUpScreen extends StatelessWidget {
+  const SignUpScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => RegisterBloc(
-        registerUseCase: RegisterUseCase(
+      create: (context) => SignUpBloc(
+        registerUseCase: SignUpUseCase(
           authenticationRepository: context.read<AuthenticationRepository>(),
         ),
       ),
-      child: const LoginView(),
+      child: const SignUpView(),
     );
   }
 }
 
-class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+class SignUpView extends StatefulWidget {
+  const SignUpView({super.key});
 
   @override
-  State<LoginView> createState() => _LoginViewState();
+  State<SignUpView> createState() => _SignUpViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
+class _SignUpViewState extends State<SignUpView> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _emailController;
   late final TextEditingController _usernameController;
@@ -52,8 +52,8 @@ class _LoginViewState extends State<LoginView> {
       return;
     }
 
-    context.read<RegisterBloc>().add(
-      RegisterSubmitted(
+    context.read<SignUpBloc>().add(
+      SignUpSubmitted(
         email: _emailController.text.trim(),
         username: _usernameController.text.trim(),
         password: _passwordController.text.trim(),
@@ -67,9 +67,9 @@ class _LoginViewState extends State<LoginView> {
       appBar: AppBar(
         title: const Text('Register'),
       ),
-      body: BlocListener<RegisterBloc, RegisterState>(
+      body: BlocListener<SignUpBloc, SignUp>(
         listener: (context, state) {
-          if (state is RegisterLoadingFailure) {
+          if (state is SignInFailure) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
@@ -78,7 +78,7 @@ class _LoginViewState extends State<LoginView> {
                 ),
               );
           }
-          if (state is RegisterLoadingSuccess) {
+          if (state is SignInSuccess) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
@@ -111,12 +111,12 @@ class _LoginViewState extends State<LoginView> {
 class _EmailInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<RegisterBloc>().state;
-    final viewState = context.read<_LoginViewState>();
+    final state = context.watch<SignUpBloc>().state;
+    final viewState = context.read<_SignUpViewState>();
 
     return TextFormField(
       controller: viewState._emailController,
-      enabled: state is! RegisterLoading,
+      enabled: state is! SignUpLoading,
       decoration: const InputDecoration(
         labelText: 'Email',
         border: OutlineInputBorder(),
@@ -139,12 +139,12 @@ class _EmailInputField extends StatelessWidget {
 class _UsernameInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<RegisterBloc>().state;
-    final viewState = context.read<_LoginViewState>();
+    final state = context.watch<SignUpBloc>().state;
+    final viewState = context.read<_SignUpViewState>();
 
     return TextFormField(
       controller: viewState._usernameController,
-      enabled: state is! RegisterLoading,
+      enabled: state is! SignUpLoading,
       decoration: const InputDecoration(
         labelText: 'Username',
         border: OutlineInputBorder(),
@@ -162,12 +162,12 @@ class _UsernameInputField extends StatelessWidget {
 class _PasswordInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<RegisterBloc>().state;
-    final viewState = context.read<_LoginViewState>();
+    final state = context.watch<SignUpBloc>().state;
+    final viewState = context.read<_SignUpViewState>();
 
     return TextFormField(
       controller: viewState._passwordController,
-      enabled: state is! RegisterLoading,
+      enabled: state is! SignUpLoading,
       decoration: const InputDecoration(
         labelText: 'Password',
         border: OutlineInputBorder(),
@@ -192,9 +192,9 @@ class _RegisterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<RegisterBloc, RegisterState>(
+    return BlocBuilder<SignUpBloc, SignUp>(
       builder: (context, state) {
-        final isLoading = state is RegisterLoading;
+        final isLoading = state is SignUpLoading;
         return ElevatedButton(
           style: ElevatedButton.styleFrom(
             minimumSize: const Size.fromHeight(50),

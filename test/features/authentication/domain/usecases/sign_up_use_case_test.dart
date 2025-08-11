@@ -13,12 +13,12 @@ void main() {
   });
 
   group('RegisterUseCase', () {
-    late RegisterUseCase useCase;
+    late SignUpUseCase useCase;
     late MockAuthenticationRepository mockRepository;
 
     setUp(() {
       mockRepository = MockAuthenticationRepository();
-      useCase = RegisterUseCase(authenticationRepository: mockRepository);
+      useCase = SignUpUseCase(authenticationRepository: mockRepository);
     });
 
     const tEmail = 'test@mail.com';
@@ -36,7 +36,7 @@ void main() {
       'should call authenticationRepository.register and return token successfully',
       () async {
         when(
-          () => mockRepository.register(user: tUserEntity),
+          () => mockRepository.signUp(user: tUserEntity),
         ).thenAnswer((_) async => tToken);
 
         final result = await useCase(
@@ -46,7 +46,7 @@ void main() {
         );
 
         expect(result, tToken);
-        verify(() => mockRepository.register(user: tUserEntity)).called(1);
+        verify(() => mockRepository.signUp(user: tUserEntity)).called(1);
         verifyNoMoreInteractions(mockRepository);
       },
     );
@@ -56,7 +56,7 @@ void main() {
       () async {
         final tException = Exception('Email already exists');
         when(
-          () => mockRepository.register(user: any(named: 'user')),
+          () => mockRepository.signUp(user: any(named: 'user')),
         ).thenThrow(tException);
 
         final call = useCase.call;
@@ -66,7 +66,7 @@ void main() {
           throwsA(isA<Exception>()),
         );
 
-        verify(() => mockRepository.register(user: tUserEntity)).called(1);
+        verify(() => mockRepository.signUp(user: tUserEntity)).called(1);
         verifyNoMoreInteractions(mockRepository);
       },
     );

@@ -19,7 +19,7 @@ class ApplicationView extends StatelessWidget {
     return const MaterialApp(
       title: title,
       debugShowCheckedModeBanner: false,
-      home: LoginScreen(),
+      home: SignUpScreen(),
     );
   }
 }

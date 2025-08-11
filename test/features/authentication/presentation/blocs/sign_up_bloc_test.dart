@@ -3,24 +3,24 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:twitter_application/features/authentication/authentication.dart';
 
-class MockRegisterUseCase extends Mock implements RegisterUseCase {}
+class MockSignUpUseCase extends Mock implements SignUpUseCase {}
 
 void main() {
   group('RegisterBloc', () {
-    late RegisterBloc registerBloc;
-    late MockRegisterUseCase mockRegisterUseCase;
+    late SignUpBloc registerBloc;
+    late MockSignUpUseCase mockRegisterUseCase;
 
     const tEmail = 'test@example.com';
     const tUsername = 'testuser';
     const tPassword = 'strongPassword123';
-    const tRegisterEvent = RegisterSubmitted(
+    const tRegisterEvent = SignUpSubmitted(
       email: tEmail,
       username: tUsername,
       password: tPassword,
     );
     setUp(() {
-      mockRegisterUseCase = MockRegisterUseCase();
-      registerBloc = RegisterBloc(registerUseCase: mockRegisterUseCase);
+      mockRegisterUseCase = MockSignUpUseCase();
+      registerBloc = SignUpBloc(registerUseCase: mockRegisterUseCase);
     });
 
     tearDown(() {
@@ -28,11 +28,11 @@ void main() {
     });
 
     test('initial state is RegisterInitial', () {
-      expect(registerBloc.state, const RegisterInitial());
+      expect(registerBloc.state, const SignUpInitial());
     });
 
     group('on RegisterSubmitted', () {
-      blocTest<RegisterBloc, RegisterState>(
+      blocTest<SignUpBloc, SignUp>(
         'emits [RegisterLoading, RegisterLoadingSuccess] when registration is successful',
         setUp: () {
           when(
@@ -45,9 +45,9 @@ void main() {
         },
         build: () => registerBloc,
         act: (bloc) => bloc.add(tRegisterEvent),
-        expect: () => <RegisterState>[
-          const RegisterLoading(),
-          const RegisterLoadingSuccess(),
+        expect: () => <SignUp>[
+          const SignUpLoading(),
+          const SignInSuccess(),
         ],
         verify: (_) {
           verify(
@@ -60,7 +60,7 @@ void main() {
         },
       );
 
-      blocTest<RegisterBloc, RegisterState>(
+      blocTest<SignUpBloc, SignUp>(
         'emits [RegisterLoading, RegisterLoadingFailure] when registration fails',
         setUp: () {
           when(
@@ -75,9 +75,9 @@ void main() {
         },
         build: () => registerBloc,
         act: (bloc) => bloc.add(tRegisterEvent),
-        expect: () => <RegisterState>[
-          const RegisterLoading(),
-          const RegisterLoadingFailure(
+        expect: () => <SignUp>[
+          const SignUpLoading(),
+          const SignInFailure(
             message: 'Exception: Email already in use',
           ),
         ],

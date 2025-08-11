@@ -1,11 +1,11 @@
-part of 'register_bloc.dart';
+part of 'sign_up_bloc.dart';
 
-sealed class RegisterEvent extends Equatable {
-  const RegisterEvent();
+sealed class SignUpEvent extends Equatable {
+  const SignUpEvent();
 }
 
-final class RegisterSubmitted extends RegisterEvent {
-  const RegisterSubmitted({
+final class SignUpSubmitted extends SignUpEvent {
+  const SignUpSubmitted({
     required this.email,
     required this.username,
     required this.password,

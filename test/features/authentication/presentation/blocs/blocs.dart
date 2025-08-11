@@ -1,1 +1,1 @@
-export 'register_bloc_test.dart';
+export 'sign_up_bloc_test.dart';
