@@ -7,22 +7,13 @@ class Application extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ProviderScope(
-      child: ApplicationView(),
-    );
-  }
-}
-
-class ApplicationView extends StatelessWidget {
-  const ApplicationView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
     const title = 'Twitter';
-    return const MaterialApp(
-      title: title,
-      debugShowCheckedModeBanner: false,
-      home: SignUpScreen(),
+    return const ProviderScope(
+      child: MaterialApp(
+        title: title,
+        debugShowCheckedModeBanner: false,
+        home: SignUpScreen(),
+      ),
     );
   }
 }
