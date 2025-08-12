@@ -4,9 +4,10 @@ import 'package:twitter_application/core/core.dart';
 const String _authenticationTokenKey = 'authorization_token';
 
 abstract class AuthenticationLocalDataSource {
-  Future<String?> getAuthenticationToken();
-  Future<void> saveAuthenticationToken(String token);
-  Future<void> clearAuthenticationToken();
+  Future<Either<Failure, String?>> getAuthenticationToken();
+
+  Future<Either<Failure, void>> saveAuthenticationToken(String token);
+  Future<Either<Failure, void>> clearAuthenticationToken();
 }
 
 class AuthenticationLocalDataSourceImplmentation
@@ -17,29 +18,41 @@ class AuthenticationLocalDataSourceImplmentation
   final FlutterSecureStorage _secureStorage;
 
   @override
-  Future<void> clearAuthenticationToken() async {
+  Future<Either<Failure, void>> clearAuthenticationToken() async {
     try {
       await _secureStorage.delete(key: _authenticationTokenKey);
-    } catch (e) {
-      throw CacheException('Failed to clear authorization token: $e');
+
+      return const Right(null);
+    } on Exception catch (e) {
+      return Left(
+        CacheFailure(message: 'Failed to clear authorization token: $e'),
+      );
     }
   }
 
   @override
-  Future<String?> getAuthenticationToken() async {
+  Future<Either<Failure, String?>> getAuthenticationToken() async {
     try {
-      return await _secureStorage.read(key: _authenticationTokenKey);
-    } catch (e) {
-      throw CacheException('Failed to read authorization token: $e');
+      final token = await _secureStorage.read(key: _authenticationTokenKey);
+
+      return Right(token);
+    } on Exception catch (e) {
+      return Left(
+        CacheFailure(message: 'Failed to read authorization token: $e'),
+      );
     }
   }
 
   @override
-  Future<void> saveAuthenticationToken(String token) async {
+  Future<Either<Failure, void>> saveAuthenticationToken(String token) async {
     try {
       await _secureStorage.write(key: _authenticationTokenKey, value: token);
-    } catch (e) {
-      throw CacheException('Failed to save authorization token: $e');
+
+      return const Right(null);
+    } on Exception catch (e) {
+      return Left(
+        CacheFailure(message: 'Failed to save authorization token: $e'),
+      );
     }
   }
 }

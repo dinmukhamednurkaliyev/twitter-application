@@ -47,12 +47,12 @@ final authenticationRepositoryProvider = Provider<AuthenticationRepository>((
 
 final signUpUseCaseProvider = Provider<SignUpUseCase>((ref) {
   final repository = ref.watch(authenticationRepositoryProvider);
-  return SignUpUseCase(authenticationRepository: repository);
+  return SignUpUseCase(repository: repository);
 });
 
 final signInUseCaseProvider = Provider<SignInUseCase>((ref) {
   final repository = ref.watch(authenticationRepositoryProvider);
-  return SignInUseCase(authenticationRepository: repository);
+  return SignInUseCase(repository: repository);
 });
 
 final getCurrentUserUseCaseProvider = Provider<GetCurrentUserUseCase>((ref) {

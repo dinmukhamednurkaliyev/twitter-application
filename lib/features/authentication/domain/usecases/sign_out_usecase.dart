@@ -1,7 +1,11 @@
-import 'package:twitter_application/features/authentication/domain/repositories/authentication_repository.dart';
+import 'package:twitter_application/core/core.dart';
+import 'package:twitter_application/features/authentication/authentication.dart';
 
 class SignOutUseCase {
-  SignOutUseCase({required this.repository});
+  const SignOutUseCase({required this.repository});
   final AuthenticationRepository repository;
-  Future<void> call() => repository.signOut();
+
+  Future<Either<Failure, void>> call() {
+    return repository.signOut();
+  }
 }

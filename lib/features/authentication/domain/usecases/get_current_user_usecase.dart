@@ -1,8 +1,12 @@
-import 'package:twitter_application/features/authentication/domain/entities/user_entity.dart';
-import 'package:twitter_application/features/authentication/domain/repositories/authentication_repository.dart';
+// Импортируем наши новые типы
+import 'package:twitter_application/core/core.dart'; // Either и Failure
+import 'package:twitter_application/features/authentication/authentication.dart';
 
 class GetCurrentUserUseCase {
   GetCurrentUserUseCase({required this.repository});
   final AuthenticationRepository repository;
-  Future<UserEntity?> call() => repository.getCurrentUser();
+
+  Future<Either<Failure, UserEntity?>> call() {
+    return repository.getCurrentUser();
+  }
 }

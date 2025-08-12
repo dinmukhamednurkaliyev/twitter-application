@@ -3,10 +3,14 @@ import 'package:twitter_application/core/core.dart';
 import 'package:twitter_application/features/authentication/authentication.dart';
 
 abstract class AuthenticationRemoteDataSource {
-  Future<AuthenticationResponseModel> signUp(SignUpParams params);
-  Future<AuthenticationResponseModel> signIn(SignInParams params);
+  Future<Either<Failure, AuthenticationResponseModel>> signUp(
+    SignUpParams params,
+  );
+  Future<Either<Failure, AuthenticationResponseModel>> signIn(
+    SignInParams params,
+  );
 
-  Future<UserModel> fetchProfile();
+  Future<Either<Failure, UserModel>> fetchProfile();
 }
 
 class AuthenticationRemoteDataSourceImplementation
@@ -15,57 +19,74 @@ class AuthenticationRemoteDataSourceImplementation
   final Dio dio;
 
   @override
-  Future<AuthenticationResponseModel> signUp(SignUpParams params) async {
+  Future<Either<Failure, AuthenticationResponseModel>> signUp(
+    SignUpParams params,
+  ) async {
     try {
       final response = await dio.post<Map<String, dynamic>>(
         '/auth/signup',
         data: params.toJson(),
       );
-
-      return AuthenticationResponseModel.fromJson(response.data!);
+      return Right(AuthenticationResponseModel.fromJson(response.data!));
     } on DioException catch (e) {
       if (e.response?.statusCode == 409) {
-        throw const ServerException('A user with this email already exists.');
+        return const Left(
+          ServerFailure(
+            message: 'A user with this email already exists.',
+          ),
+        );
       }
-      throw ServerException('API Error: ${e.message}');
-    } catch (e) {
-      throw ServerException('An unexpected error occurred: $e');
+      return Left(ServerFailure(message: 'API Error: ${e.message}'));
+    } on Exception catch (e) {
+      return Left(ServerFailure(message: 'An unexpected error occurred: $e'));
     }
   }
 
   @override
-  Future<AuthenticationResponseModel> signIn(SignInParams params) async {
+  Future<Either<Failure, AuthenticationResponseModel>> signIn(
+    SignInParams params,
+  ) async {
     try {
       final response = await dio.post<Map<String, dynamic>>(
         '/auth/login',
         data: params.toJson(),
       );
-
-      return AuthenticationResponseModel.fromJson(response.data!);
+      return Right(AuthenticationResponseModel.fromJson(response.data!));
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        throw const InvalidCredentialsException('Invalid email or password.');
+        return const Left(
+          InvalidCredentialsFailure(
+            message: 'Invalid email or password.',
+          ),
+        );
       }
-      throw ServerException('API Error: ${e.message}');
-    } catch (e) {
-      throw ServerException('An unexpected error occurred: $e');
+      return Left(ServerFailure(message: 'API Error: ${e.message}'));
+    } on Exception catch (e) {
+      return Left(ServerFailure(message: 'An unexpected error occurred: $e'));
     }
   }
 
   @override
-  Future<UserModel> fetchProfile() async {
+  Future<Either<Failure, UserModel>> fetchProfile() async {
     try {
       final response = await dio.get<Map<String, dynamic>>(
         '/auth/me',
       );
-      return UserModel.fromJson(response.data!);
+
+      return Right(UserModel.fromJson(response.data!));
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        throw const InvalidCredentialsException('Token is invalid or expired.');
+        return const Left(
+          InvalidCredentialsFailure(
+            message: 'Token is invalid or expired.',
+          ),
+        );
       }
-      throw ServerException('Failed to fetch profile: ${e.message}');
-    } catch (e) {
-      throw ServerException('An unexpected error occurred: $e');
+      return Left(
+        ServerFailure(message: 'Failed to fetch profile: ${e.message}'),
+      );
+    } on Exception catch (e) {
+      return Left(ServerFailure(message: 'An unexpected error occurred: $e'));
     }
   }
 }

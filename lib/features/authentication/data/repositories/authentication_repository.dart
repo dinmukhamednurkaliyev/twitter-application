@@ -11,61 +11,79 @@ class AuthenticationRepositoryImplementation
   final AuthenticationLocalDataSource localDataSource;
 
   @override
-  Future<UserEntity> signIn({required SignInParams params}) async {
-    try {
-      final authenticationResponse = await remoteDataSource.signIn(
-        params,
-      );
-      await localDataSource.saveAuthenticationToken(
-        authenticationResponse.token,
-      );
-      return authenticationResponse.user;
-    } catch (e) {
-      rethrow;
-    }
+  Future<Either<Failure, UserEntity>> signIn({
+    required SignInParams params,
+  }) async {
+    final remoteResult = await remoteDataSource.signIn(params);
+
+    return remoteResult.fold(
+      (failure) {
+        return Left(failure);
+      },
+
+      (authenticationResponse) async {
+        final localResult = await localDataSource.saveAuthenticationToken(
+          authenticationResponse.token,
+        );
+        // Обрабатываем результат сохранения
+        return localResult.fold(
+          Left.new, // Если сохранение не удалось, возвращаем ошибку
+          (_) => Right(
+            authenticationResponse.user,
+          ), // Если все успешно, возвращаем UserEntity
+        );
+      },
+    );
   }
 
   @override
-  Future<UserEntity> signUp({required SignUpParams params}) async {
-    try {
-      final authenticationResponse = await remoteDataSource.signUp(params);
-      await localDataSource.saveAuthenticationToken(
-        authenticationResponse.token,
-      );
-      return authenticationResponse.user;
-    } catch (e) {
-      rethrow;
-    }
+  Future<Either<Failure, UserEntity>> signUp({
+    required SignUpParams params,
+  }) async {
+    final remoteResult = await remoteDataSource.signUp(params);
+
+    return remoteResult.fold(
+      Left.new,
+      (authenticationResponse) async {
+        final localResult = await localDataSource.saveAuthenticationToken(
+          authenticationResponse.token,
+        );
+        return localResult.fold(
+          Left.new,
+          (_) => Right(authenticationResponse.user),
+        );
+      },
+    );
   }
 
   @override
-  Future<void> signOut() async {
-    try {
-      await localDataSource.clearAuthenticationToken();
-    } catch (e) {
-      rethrow;
-    }
+  Future<Either<Failure, void>> signOut() async {
+    return localDataSource.clearAuthenticationToken();
   }
 
   @override
-  Future<UserEntity?> getCurrentUser() async {
-    try {
-      final token = await localDataSource.getAuthenticationToken();
-      if (token == null) {
-        return null;
-      }
+  Future<Either<Failure, UserEntity?>> getCurrentUser() async {
+    final tokenResult = await localDataSource.getAuthenticationToken();
 
-      final user = await remoteDataSource.fetchProfile();
-      return user;
-    } on InvalidCredentialsException {
-      await localDataSource.clearAuthenticationToken();
-      return null;
-    } on CacheException {
-      return null;
-    } on ServerException {
-      return null;
-    } on Exception {
-      return null;
-    }
+    return tokenResult.fold(
+      Left.new,
+      (token) async {
+        if (token == null) {
+          return const Right(null);
+        }
+
+        final profileResult = await remoteDataSource.fetchProfile();
+
+        return profileResult.fold(
+          (failure) async {
+            if (failure is InvalidCredentialsFailure) {
+              await localDataSource.clearAuthenticationToken();
+            }
+            return Left(failure);
+          },
+          Right.new,
+        );
+      },
+    );
   }
 }

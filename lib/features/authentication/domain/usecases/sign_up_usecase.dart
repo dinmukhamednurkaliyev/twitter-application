@@ -1,13 +1,14 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:twitter_application/core/core.dart';
 import 'package:twitter_application/features/authentication/authentication.dart';
 
 class SignUpUseCase {
-  const SignUpUseCase({required this.authenticationRepository});
-  final AuthenticationRepository authenticationRepository;
+  const SignUpUseCase({required this.repository});
+  final AuthenticationRepository repository;
 
-  Future<UserEntity> call(SignUpParams params) async {
-    return authenticationRepository.signUp(params: params);
+  Future<Either<Failure, UserEntity>> call(SignUpParams params) {
+    return repository.signUp(params: params);
   }
 }
 

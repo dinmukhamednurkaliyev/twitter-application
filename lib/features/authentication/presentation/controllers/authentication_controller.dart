@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:twitter_application/features/authentication/authentication.dart';
 
@@ -6,9 +8,14 @@ class AuthenticationController extends AsyncNotifier<UserEntity?> {
   Future<UserEntity?> build() async {
     final getCurrentUserUseCase = ref.read(getCurrentUserUseCaseProvider);
 
-    final user = await getCurrentUserUseCase();
+    final result = await getCurrentUserUseCase();
 
-    return user;
+    return result.fold(
+      (failure) {
+        return null;
+      },
+      (user) => user,
+    );
   }
 
   Future<void> signUp({
@@ -23,7 +30,17 @@ class AuthenticationController extends AsyncNotifier<UserEntity?> {
       username: username,
       password: password,
     );
-    state = await AsyncValue.guard(() => signUpUseCase(params));
+
+    final result = await signUpUseCase(params);
+
+    result.fold(
+      (failure) {
+        state = AsyncValue.error(failure, StackTrace.current);
+      },
+      (userEntity) {
+        state = AsyncValue.data(userEntity);
+      },
+    );
   }
 
   Future<void> signIn({
@@ -33,18 +50,29 @@ class AuthenticationController extends AsyncNotifier<UserEntity?> {
     final signInUseCase = ref.read(signInUseCaseProvider);
     state = const AsyncLoading();
     final params = SignInParams(email: email, password: password);
-    state = await AsyncValue.guard(() => signInUseCase(params));
+
+    final result = await signInUseCase(params);
+
+    result.fold(
+      (failure) => state = AsyncValue.error(failure, StackTrace.current),
+      (userEntity) => state = AsyncValue.data(userEntity),
+    );
   }
 
   Future<void> signOut() async {
     final signOutUseCase = ref.read(signOutUseCaseProvider);
-
     state = const AsyncLoading();
 
-    state = await AsyncValue.guard(() async {
-      await signOutUseCase();
-      return null;
-    });
+    final result = await signOutUseCase();
+
+    result.fold(
+      (failure) {
+        state = const AsyncValue.data(null);
+      },
+      (_) {
+        state = const AsyncValue.data(null);
+      },
+    );
   }
 }
 
