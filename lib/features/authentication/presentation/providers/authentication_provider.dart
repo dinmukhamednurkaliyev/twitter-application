@@ -12,14 +12,16 @@ final authenticationDataSourceProvider = Provider<AuthenticationDataSource>((
   ref,
 ) {
   final dio = ref.watch(dioProvider);
-  return AuthenticationDataSourceImpl(dio: dio);
+  return AuthenticationDataSourceImplementation(dio: dio);
 });
 
 final authenticationRepositoryProvider = Provider<AuthenticationRepository>((
   ref,
 ) {
   final remoteDataSource = ref.watch(authenticationDataSourceProvider);
-  return AuthenticationRepositoryImpl(remoteDataSource: remoteDataSource);
+  return AuthenticationRepositoryImplementation(
+    remoteDataSource: remoteDataSource,
+  );
 });
 
 final signUpUseCaseProvider = Provider<SignUpUseCase>((ref) {

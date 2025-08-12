@@ -7,8 +7,9 @@ abstract class AuthenticationDataSource {
   Future<UserModel> signIn(SignInParams params);
 }
 
-class AuthenticationDataSourceImpl implements AuthenticationDataSource {
-  AuthenticationDataSourceImpl({required this.dio});
+class AuthenticationDataSourceImplementation
+    implements AuthenticationDataSource {
+  AuthenticationDataSourceImplementation({required this.dio});
   final Dio dio;
 
   @override

@@ -9,8 +9,8 @@ abstract class SessionLocalDataSource {
   Future<void> clearAuthorizationToken();
 }
 
-class SessionLocalDataSourceImpl implements SessionLocalDataSource {
-  const SessionLocalDataSourceImpl({
+class SessionLocalDataSourceImplmentation implements SessionLocalDataSource {
+  const SessionLocalDataSourceImplmentation({
     required FlutterSecureStorage secureStorage,
   }) : _secureStorage = secureStorage;
   final FlutterSecureStorage _secureStorage;

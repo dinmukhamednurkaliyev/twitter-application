@@ -1,8 +1,9 @@
 import 'package:twitter_application/core/core.dart';
 import 'package:twitter_application/features/authentication/authentication.dart';
 
-class AuthenticationRepositoryImpl implements AuthenticationRepository {
-  AuthenticationRepositoryImpl({required this.remoteDataSource});
+class AuthenticationRepositoryImplementation
+    implements AuthenticationRepository {
+  AuthenticationRepositoryImplementation({required this.remoteDataSource});
   final AuthenticationDataSource remoteDataSource;
 
   @override
