@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:twitter_application/features/authentication/domain/entities/user_entity.dart';
 
+@immutable
 class UserModel extends UserEntity {
   const UserModel({
     required super.id,

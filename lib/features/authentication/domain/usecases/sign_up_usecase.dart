@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:twitter_application/features/authentication/authentication.dart';
 
 class SignUpUseCase {
@@ -10,6 +11,7 @@ class SignUpUseCase {
   }
 }
 
+@immutable
 class SignUpParams extends Equatable {
   const SignUpParams({
     required this.email,
