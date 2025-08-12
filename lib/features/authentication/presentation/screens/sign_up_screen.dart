@@ -46,7 +46,7 @@ class SignUpScreen extends ConsumerWidget {
       ),
       _SignUpButton(
         onPressed: () =>
-            ref.read(signUpFormNotifierProvider.notifier).submitSignUp(ref),
+            ref.read(signUpFormNotifierProvider.notifier).submitSignUp(),
       ),
     ];
 

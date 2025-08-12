@@ -32,7 +32,7 @@ class SignUpFormState {
 }
 
 class SignUpFormNotifier extends StateNotifier<SignUpFormState> {
-  SignUpFormNotifier()
+  SignUpFormNotifier(this._ref)
     : super(
         SignUpFormState(
           formKey: GlobalKey<FormState>(),
@@ -41,6 +41,7 @@ class SignUpFormNotifier extends StateNotifier<SignUpFormState> {
           passwordController: TextEditingController(),
         ),
       );
+  final Ref _ref;
 
   static String? validateEmail(String? value) {
     if (value == null || value.trim().isEmpty) {
@@ -73,7 +74,7 @@ class SignUpFormNotifier extends StateNotifier<SignUpFormState> {
     state = state.copyWith(isPasswordVisible: !state.isPasswordVisible);
   }
 
-  void submitSignUp(WidgetRef ref) {
+  void submitSignUp() {
     if (state.formKey.currentState?.validate() != true) {
       return;
     }
@@ -82,7 +83,7 @@ class SignUpFormNotifier extends StateNotifier<SignUpFormState> {
     final username = state.usernameController.text.trim();
     final password = state.passwordController.text.trim();
 
-    ref
+    _ref
         .read(authenticationControllerProvider.notifier)
         .signUp(
           email: email,
@@ -103,5 +104,5 @@ class SignUpFormNotifier extends StateNotifier<SignUpFormState> {
 final AutoDisposeStateNotifierProvider<SignUpFormNotifier, SignUpFormState>
 signUpFormNotifierProvider =
     StateNotifierProvider.autoDispose<SignUpFormNotifier, SignUpFormState>(
-      (ref) => SignUpFormNotifier(),
+      SignUpFormNotifier.new,
     );
