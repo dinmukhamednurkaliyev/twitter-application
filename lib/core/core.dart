@@ -1,3 +1,3 @@
-export 'error/exceptions.dart';
+export 'exceptions/exceptions.dart';
 export 'extensions/extensions.dart';
 export 'utilities/utilities.dart';

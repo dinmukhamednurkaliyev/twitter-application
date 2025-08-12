@@ -13,13 +13,13 @@ class AuthenticationRepositoryImplementation
   @override
   Future<UserEntity> signIn({required SignInParams params}) async {
     try {
-      final authResponse = await remoteDataSource.signIn(
+      final authenticationResponse = await remoteDataSource.signIn(
         params,
       );
       await localDataSource.saveAuthenticationToken(
-        authResponse.token,
+        authenticationResponse.token,
       );
-      return authResponse.user;
+      return authenticationResponse.user;
     } catch (e) {
       rethrow;
     }
@@ -28,9 +28,11 @@ class AuthenticationRepositoryImplementation
   @override
   Future<UserEntity> signUp({required SignUpParams params}) async {
     try {
-      final authResponse = await remoteDataSource.signUp(params);
-      await localDataSource.saveAuthenticationToken(authResponse.token);
-      return authResponse.user;
+      final authenticationResponse = await remoteDataSource.signUp(params);
+      await localDataSource.saveAuthenticationToken(
+        authenticationResponse.token,
+      );
+      return authenticationResponse.user;
     } catch (e) {
       rethrow;
     }
