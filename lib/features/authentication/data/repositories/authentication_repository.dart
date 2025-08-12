@@ -3,38 +3,67 @@ import 'package:twitter_application/features/authentication/authentication.dart'
 
 class AuthenticationRepositoryImplementation
     implements AuthenticationRepository {
-  AuthenticationRepositoryImplementation({required this.remoteDataSource});
-  final AuthenticationDataSource remoteDataSource;
+  AuthenticationRepositoryImplementation({
+    required this.remoteDataSource,
+    required this.localDataSource,
+  });
+  final AuthenticationRemoteDataSource remoteDataSource;
+  final AuthenticationLocalDataSource localDataSource;
 
   @override
-  Future<UserEntity> signUp({required SignUpParams params}) async {
+  Future<UserEntity> signIn({required SignInParams params}) async {
     try {
-      final userModel = await remoteDataSource.signUp(params);
-      return userModel;
-    } on ServerException catch (e) {
-      throw ServerException(e.message);
-    } on NetworkException catch (e) {
-      throw NetworkException(e.message);
+      final authResponse = await remoteDataSource.signIn(
+        params,
+      );
+      await localDataSource.saveAuthenticationToken(
+        authResponse.token,
+      );
+      return authResponse.user;
     } catch (e) {
-      throw ServerException('An unexpectged error occurred: $e');
+      rethrow;
     }
   }
 
   @override
-  Future<UserEntity?> getCurrentUser() {
-    // TODO: implement getCurrentUser
-    throw UnimplementedError();
+  Future<UserEntity> signUp({required SignUpParams params}) async {
+    try {
+      final authResponse = await remoteDataSource.signUp(params);
+      await localDataSource.saveAuthenticationToken(authResponse.token);
+      return authResponse.user;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override
-  Future<UserEntity> signIn({required SignInParams params}) {
-    // TODO: implement signIn
-    throw UnimplementedError();
+  Future<void> signOut() async {
+    try {
+      await localDataSource.clearAuthenticationToken();
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override
-  Future<void> signOut() {
-    // TODO: implement signOut
-    throw UnimplementedError();
+  Future<UserEntity?> getCurrentUser() async {
+    try {
+      final token = await localDataSource.getAuthenticationToken();
+      if (token == null) {
+        return null;
+      }
+
+      final user = await remoteDataSource.fetchProfile();
+      return user;
+    } on InvalidCredentialsException {
+      await localDataSource.clearAuthenticationToken();
+      return null;
+    } on CacheException {
+      return null;
+    } on ServerException {
+      return null;
+    } on Exception {
+      return null;
+    }
   }
 }

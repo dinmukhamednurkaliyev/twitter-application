@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:twitter_application/features/authentication/domain/entities/user_entity.dart';
+import 'package:twitter_application/features/authentication/authentication.dart';
 
 @immutable
 class UserModel extends UserEntity {

@@ -1,12 +1,14 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:twitter_application/features/authentication/authentication.dart';
 
 class AuthenticationController extends AsyncNotifier<UserEntity?> {
   @override
-  FutureOr<UserEntity?> build() {
-    return null;
+  Future<UserEntity?> build() async {
+    final getCurrentUserUseCase = ref.read(getCurrentUserUseCaseProvider);
+
+    final user = await getCurrentUserUseCase();
+
+    return user;
   }
 
   Future<void> signUp({
@@ -16,13 +18,11 @@ class AuthenticationController extends AsyncNotifier<UserEntity?> {
   }) async {
     final signUpUseCase = ref.read(signUpUseCaseProvider);
     state = const AsyncLoading();
-
     final params = SignUpParams(
       email: email,
       username: username,
       password: password,
     );
-
     state = await AsyncValue.guard(() => signUpUseCase(params));
   }
 
@@ -33,13 +33,18 @@ class AuthenticationController extends AsyncNotifier<UserEntity?> {
     final signInUseCase = ref.read(signInUseCaseProvider);
     state = const AsyncLoading();
     final params = SignInParams(email: email, password: password);
-
-    state = await AsyncValue.guard(() async => signInUseCase(params));
+    state = await AsyncValue.guard(() => signInUseCase(params));
   }
 
   Future<void> signOut() async {
+    final signOutUseCase = ref.read(signOutUseCaseProvider);
+
     state = const AsyncLoading();
-    state = const AsyncData(null);
+
+    state = await AsyncValue.guard(() async {
+      await signOutUseCase();
+      return null;
+    });
   }
 }
 
