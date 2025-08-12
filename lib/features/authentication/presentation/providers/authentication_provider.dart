@@ -4,65 +4,88 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:twitter_application/features/authentication/authentication.dart';
 
 final dioProvider = Provider<Dio>((ref) {
-  return Dio(
+  const baseUrl = 'https://api.yourapp.com';
+
+  final dio = Dio(
     BaseOptions(
-      baseUrl: 'https://api.yourapp.com',
+      baseUrl: baseUrl,
       connectTimeout: const Duration(seconds: 5),
       receiveTimeout: const Duration(seconds: 3),
       headers: {'Content-Type': 'application/json; charset=UTF-8'},
     ),
   );
-});
 
-final authenticationDataSourceProvider =
-    Provider<AuthenticationRemoteDataSource>((
-      ref,
-    ) {
-      final dio = ref.watch(dioProvider);
-      return AuthenticationRemoteDataSourceImplementation(dio: dio);
-    });
+  dio.interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final localDataSource = ref.read(authLocalDataSourceProvider);
+        final tokenResult = await localDataSource.getAuthenticationToken();
+
+        tokenResult.fold(
+          (failure) {
+            handler.next(options);
+          },
+          (token) {
+            if (token != null) {
+              options.headers['Authorization'] = 'Bearer $token';
+            }
+            handler.next(options);
+          },
+        );
+      },
+    ),
+  );
+
+  return dio;
+});
 
 final Provider<FlutterSecureStorage> flutterSecureStorageProvider = Provider(
   (ref) => const FlutterSecureStorage(),
 );
 
-final sessionLocalDataSourceProvider = Provider<AuthenticationLocalDataSource>((
+final authRemoteDataSourceProvider = Provider<AuthenticationRemoteDataSource>((
   ref,
 ) {
-  return AuthenticationLocalDataSourceImplmentation(
+  return AuthenticationRemoteDataSourceImplementation(
+    dio: ref.watch(dioProvider),
+  );
+});
+
+final authLocalDataSourceProvider = Provider<AuthenticationLocalDataSource>((
+  ref,
+) {
+  return AuthenticationLocalDataSourceImplementation(
     secureStorage: ref.watch(flutterSecureStorageProvider),
   );
 });
 
-final authenticationRepositoryProvider = Provider<AuthenticationRepository>((
-  ref,
-) {
+final authRepositoryProvider = Provider<AuthenticationRepository>((ref) {
   return AuthenticationRepositoryImplementation(
-    remoteDataSource: ref.watch(authenticationDataSourceProvider),
-    localDataSource: ref.watch(
-      sessionLocalDataSourceProvider,
-    ), // <<< Передаем новую зависимость
+    remoteDataSource: ref.watch(authRemoteDataSourceProvider),
+    localDataSource: ref.watch(authLocalDataSourceProvider),
   );
 });
 
 final signUpUseCaseProvider = Provider<SignUpUseCase>((ref) {
-  final repository = ref.watch(authenticationRepositoryProvider);
-  return SignUpUseCase(repository: repository);
+  return SignUpUseCase(
+    repository: ref.watch(authRepositoryProvider),
+  );
 });
 
 final signInUseCaseProvider = Provider<SignInUseCase>((ref) {
-  final repository = ref.watch(authenticationRepositoryProvider);
-  return SignInUseCase(repository: repository);
+  return SignInUseCase(
+    repository: ref.watch(authRepositoryProvider),
+  );
 });
 
 final getCurrentUserUseCaseProvider = Provider<GetCurrentUserUseCase>((ref) {
   return GetCurrentUserUseCase(
-    repository: ref.watch(authenticationRepositoryProvider),
+    repository: ref.watch(authRepositoryProvider),
   );
 });
 
 final signOutUseCaseProvider = Provider<SignOutUseCase>((ref) {
   return SignOutUseCase(
-    repository: ref.watch(authenticationRepositoryProvider),
+    repository: ref.watch(authRepositoryProvider),
   );
 });

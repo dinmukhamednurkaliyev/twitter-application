@@ -10,9 +10,9 @@ abstract class AuthenticationLocalDataSource {
   Future<Either<Failure, void>> clearAuthenticationToken();
 }
 
-class AuthenticationLocalDataSourceImplmentation
+class AuthenticationLocalDataSourceImplementation
     implements AuthenticationLocalDataSource {
-  const AuthenticationLocalDataSourceImplmentation({
+  const AuthenticationLocalDataSourceImplementation({
     required FlutterSecureStorage secureStorage,
   }) : _secureStorage = secureStorage;
   final FlutterSecureStorage _secureStorage;
