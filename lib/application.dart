@@ -8,11 +8,11 @@ class Application extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const title = 'Twitter';
-    return ProviderScope(
+    return const ProviderScope(
       child: MaterialApp(
         title: title,
         debugShowCheckedModeBanner: false,
-        home: SignUpScreen(),
+        home: SignInScreen(),
       ),
     );
   }

@@ -1,8 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:twitter_application/features/authentication/domain/entities/user_entity.dart';
-import 'package:twitter_application/features/authentication/presentation/controllers/controllers.dart';
+import 'package:twitter_application/features/authentication/authentication.dart';
 
 class SignUpScreen extends ConsumerWidget {
   const SignUpScreen({super.key});
