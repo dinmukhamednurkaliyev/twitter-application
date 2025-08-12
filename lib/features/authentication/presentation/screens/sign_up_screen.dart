@@ -1,37 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:twitter_application/features/authentication/authentication.dart';
-
-final AutoDisposeProvider<TextEditingController> _emailControllerProvider =
-    Provider.autoDispose((ref) => TextEditingController());
-final AutoDisposeProvider<TextEditingController> _usernameControllerProvider =
-    Provider.autoDispose((ref) => TextEditingController());
-final AutoDisposeProvider<TextEditingController> _passwordControllerProvider =
-    Provider.autoDispose((ref) => TextEditingController());
+import 'package:twitter_application/features/authentication/domain/entities/user_entity.dart';
+import 'package:twitter_application/features/authentication/presentation/controllers/controllers.dart';
 
 class SignUpScreen extends ConsumerWidget {
-  SignUpScreen({super.key});
-
-  final _formKey = GlobalKey<FormState>();
-
-  void _onRegisterSubmitted(WidgetRef ref) {
-    if (_formKey.currentState?.validate() != true) {
-      return;
-    }
-
-    final email = ref.read(_emailControllerProvider).text.trim();
-    final username = ref.read(_usernameControllerProvider).text.trim();
-    final password = ref.read(_passwordControllerProvider).text.trim();
-
-    ref
-        .read(authenticationControllerProvider.notifier)
-        .signUp(
-          email: email,
-          username: username,
-          password: password,
-        );
-  }
+  const SignUpScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,23 +34,26 @@ class SignUpScreen extends ConsumerWidget {
       }
     });
 
+    final formKey = ref.watch(signUpFormNotifierProvider).formKey;
+
     final formWidgets = <Widget>[
       const _EmailInputField(),
       const _UsernameInputField(),
       const _PasswordInputField(),
       const Padding(
-        padding: EdgeInsets.only(
-          top: 16,
-        ),
+        padding: EdgeInsets.only(top: 16),
         child: _SignInLink(),
       ),
-      _SignUpButton(onPressed: () => _onRegisterSubmitted(ref)),
+      _SignUpButton(
+        onPressed: () =>
+            ref.read(signUpFormNotifierProvider.notifier).submitSignUp(ref),
+      ),
     ];
 
     return Scaffold(
       appBar: AppBar(title: const Text('Create Account')),
       body: Form(
-        key: _formKey,
+        key: formKey,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: ListView.separated(
@@ -95,25 +72,24 @@ class _EmailInputField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authenticationState = ref.watch(authenticationControllerProvider);
-    final emailController = ref.watch(_emailControllerProvider);
+    final isLoading = ref.watch(
+      authenticationControllerProvider.select((state) => state.isLoading),
+    );
+
+    final emailController = ref
+        .watch(signUpFormNotifierProvider)
+        .emailController;
 
     return TextFormField(
       controller: emailController,
-      enabled: !authenticationState.isLoading,
+      enabled: !isLoading,
       decoration: const InputDecoration(
         labelText: 'Email',
         border: OutlineInputBorder(),
       ),
       keyboardType: TextInputType.emailAddress,
       autocorrect: false,
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) return 'Email is required';
-        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-          return 'Please enter a valid email';
-        }
-        return null;
-      },
+      validator: SignUpFormNotifier.validateEmail,
     );
   }
 }
@@ -123,22 +99,21 @@ class _UsernameInputField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authenticationState = ref.watch(authenticationControllerProvider);
-    final usernameController = ref.watch(_usernameControllerProvider);
+    final isLoading = ref.watch(
+      authenticationControllerProvider.select((state) => state.isLoading),
+    );
+    final usernameController = ref
+        .watch(signUpFormNotifierProvider)
+        .usernameController;
 
     return TextFormField(
       controller: usernameController,
-      enabled: !authenticationState.isLoading,
+      enabled: !isLoading,
       decoration: const InputDecoration(
         labelText: 'Username',
         border: OutlineInputBorder(),
       ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return 'Username is required';
-        }
-        return null;
-      },
+      validator: SignUpFormNotifier.validateUsername,
     );
   }
 }
@@ -148,24 +123,31 @@ class _PasswordInputField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authenticationState = ref.watch(authenticationControllerProvider);
-    final passwordController = ref.watch(_passwordControllerProvider);
+    final isLoading = ref.watch(
+      authenticationControllerProvider.select((state) => state.isLoading),
+    );
+
+    final formState = ref.watch(signUpFormNotifierProvider);
 
     return TextFormField(
-      controller: passwordController,
-      enabled: !authenticationState.isLoading,
-      decoration: const InputDecoration(
+      controller: formState.passwordController,
+      enabled: !isLoading,
+      obscureText: !formState.isPasswordVisible,
+      decoration: InputDecoration(
         labelText: 'Password',
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
+        suffixIcon: IconButton(
+          icon: Icon(
+            formState.isPasswordVisible
+                ? Icons.visibility_off
+                : Icons.visibility,
+          ),
+          onPressed: () => ref
+              .read(signUpFormNotifierProvider.notifier)
+              .togglePasswordVisibility(),
+        ),
       ),
-      obscureText: true,
-      validator: (value) {
-        if (value == null || value.isEmpty) return 'Password is required';
-        if (value.length < 8) {
-          return 'Password must be at least 8 characters long';
-        }
-        return null;
-      },
+      validator: SignUpFormNotifier.validatePassword,
     );
   }
 }
@@ -188,10 +170,7 @@ class _SignInLink extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: theme.primaryColor,
             ),
-            recognizer: TapGestureRecognizer()
-              ..onTap = () {
-                print('Navigate to Sign In screen');
-              },
+            recognizer: TapGestureRecognizer()..onTap = () {},
           ),
         ],
       ),
@@ -205,12 +184,14 @@ class _SignUpButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authenticationControllerProvider);
+    final isLoading = ref.watch(
+      authenticationControllerProvider.select((state) => state.isLoading),
+    );
 
     return ElevatedButton(
       style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-      onPressed: authState.isLoading ? null : onPressed,
-      child: authState.isLoading
+      onPressed: isLoading ? null : onPressed,
+      child: isLoading
           ? const RepaintBoundary(
               child: SizedBox.square(
                 dimension: 24,
@@ -220,7 +201,7 @@ class _SignUpButton extends ConsumerWidget {
                 ),
               ),
             )
-          : const Text('Sign Up'),
+          : const Text('Sign In'),
     );
   }
 }

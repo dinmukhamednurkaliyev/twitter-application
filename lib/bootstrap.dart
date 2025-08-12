@@ -52,15 +52,11 @@ void _initializeLoggingAndErrorHandling() {
 
   if (kDebugMode) {
     _log.info('Debug mode detected. Initializing debug tools...');
-    // debugPaintSizeEnabled = true;
-    // debugPaintBaselinesEnabled = true;
-    // debugPaintPointersEnabled = true;
-    // debugRepaintRainbowEnabled = true;
-    // debugPaintBaselinesEnabled = true;
-    // debugPaintPointersEnabled = true;
-    // debugPrintRebuildDirtyWidgets = true;
-    // debugPaintBaselinesEnabled = true;
-    // debugPaintPointersEnabled = true;
+    // debugPaintSizeEnabled = true; // This highlights the visual layout of each widget with a border, showing its size and bounds.
+    // debugPaintBaselinesEnabled = true; // This paints a line at the baseline of text, useful for aligning text widgets.
+    // debugPaintPointersEnabled = true; // This shows a box at the position of every pointer event (like taps or drags), helping to debug gesture detectors.
+    // debugRepaintRainbowEnabled = true; // This makes a widget's layer flash a different color whenever it is repainted, useful for seeing which widgets are being rebuilt.
+    // debugPrintRebuildDirtyWidgets = true; // This prints a log to the console every time a widget is rebuilt, which is useful for performance optimization.
     WidgetsBinding.instance.addTimingsCallback((timings) {
       for (final timing in timings) {
         if (timing.totalSpan > const Duration(milliseconds: 17)) {
