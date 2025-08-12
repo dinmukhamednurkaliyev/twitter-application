@@ -1,9 +1,10 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:twitter_application/features/authentication/presentation/controllers/authentication_controller.dart';
 
 @immutable
-class SignInFormState {
+class SignInFormState extends Equatable {
   const SignInFormState({
     required this.formKey,
     required this.emailController,
@@ -26,6 +27,14 @@ class SignInFormState {
       isPasswordVisible: isPasswordVisible ?? this.isPasswordVisible,
     );
   }
+
+  @override
+  List<Object?> get props => [
+    formKey,
+    emailController,
+    passwordController,
+    isPasswordVisible,
+  ];
 }
 
 class SignInFormNotifier extends StateNotifier<SignInFormState> {
