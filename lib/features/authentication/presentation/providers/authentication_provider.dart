@@ -18,7 +18,7 @@ final dioProvider = Provider<Dio>((ref) {
   dio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) async {
-        final localDataSource = ref.read(authLocalDataSourceProvider);
+        final localDataSource = ref.read(authenticationLocalDataSourceProvider);
         final tokenResult = await localDataSource.getAuthenticationToken();
 
         tokenResult.fold(
@@ -51,41 +51,44 @@ final authRemoteDataSourceProvider = Provider<AuthenticationRemoteDataSource>((
   );
 });
 
-final authLocalDataSourceProvider = Provider<AuthenticationLocalDataSource>((
+final authenticationLocalDataSourceProvider =
+    Provider<AuthenticationLocalDataSource>((
+      ref,
+    ) {
+      return AuthenticationLocalDataSourceImplementation(
+        secureStorage: ref.watch(flutterSecureStorageProvider),
+      );
+    });
+
+final authenticationRepositoryProvider = Provider<AuthenticationRepository>((
   ref,
 ) {
-  return AuthenticationLocalDataSourceImplementation(
-    secureStorage: ref.watch(flutterSecureStorageProvider),
-  );
-});
-
-final authRepositoryProvider = Provider<AuthenticationRepository>((ref) {
   return AuthenticationRepositoryImplementation(
     remoteDataSource: ref.watch(authRemoteDataSourceProvider),
-    localDataSource: ref.watch(authLocalDataSourceProvider),
+    localDataSource: ref.watch(authenticationLocalDataSourceProvider),
   );
 });
 
 final signUpUseCaseProvider = Provider<SignUpUseCase>((ref) {
   return SignUpUseCase(
-    repository: ref.watch(authRepositoryProvider),
+    repository: ref.watch(authenticationRepositoryProvider),
   );
 });
 
 final signInUseCaseProvider = Provider<SignInUseCase>((ref) {
   return SignInUseCase(
-    repository: ref.watch(authRepositoryProvider),
+    repository: ref.watch(authenticationRepositoryProvider),
   );
 });
 
 final getCurrentUserUseCaseProvider = Provider<GetCurrentUserUseCase>((ref) {
   return GetCurrentUserUseCase(
-    repository: ref.watch(authRepositoryProvider),
+    repository: ref.watch(authenticationRepositoryProvider),
   );
 });
 
 final signOutUseCaseProvider = Provider<SignOutUseCase>((ref) {
   return SignOutUseCase(
-    repository: ref.watch(authRepositoryProvider),
+    repository: ref.watch(authenticationRepositoryProvider),
   );
 });
