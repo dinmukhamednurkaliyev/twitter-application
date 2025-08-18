@@ -25,12 +25,11 @@ class AuthenticationRepositoryImplementation
         final localResult = await localDataSource.saveAuthenticationToken(
           authenticationResponse.token,
         );
-        // Обрабатываем результат сохранения
         return localResult.fold(
-          Left.new, // Если сохранение не удалось, возвращаем ошибку
+          Left.new,
           (_) => Right(
             authenticationResponse.user,
-          ), // Если все успешно, возвращаем UserEntity
+          ),
         );
       },
     );

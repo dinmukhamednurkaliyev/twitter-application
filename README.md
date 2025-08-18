@@ -1,4 +1,4 @@
-# Twitter
+# Twitter Application
 
 ![twitter](documentation/assets/images/background.png)
 ## 🎯 About The Project
